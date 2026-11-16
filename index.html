@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Keuanganku">
+<title>Keuanganku</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ LAYAR HUBUNGKAN (pertama kali saja) ============ -->
+<section id="login" class="login" hidden>
+  <div class="login-card">
+    <img src="icon-192.png" alt="" class="login-logo" width="64" height="64">
+    <h1>Keuanganku</h1>
+    <p class="login-lead">Hubungkan aplikasi ke spreadsheet-mu. Cukup sekali di HP ini.</p>
+    <form id="login-form" novalidate>
+      <label class="field-label" for="l-url">Alamat Apps Script</label>
+      <input id="l-url" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false"
+             placeholder="https://script.google.com/macros/s/…/exec">
+      <label class="field-label" for="l-pin">PIN</label>
+      <input id="l-pin" type="password" autocomplete="current-password" placeholder="PIN yang kamu atur di spreadsheet">
+      <p class="field-err" id="l-err" hidden></p>
+      <button class="btn-primary" id="l-btn" type="submit">Hubungkan</button>
+    </form>
+    <p class="login-note">Alamat dan PIN hanya disimpan di HP ini.</p>
+  </div>
+</section>
+
+<!-- ============ APLIKASI ============ -->
+<div id="app" hidden>
+  <div class="loadbar" id="loadbar" hidden></div>
+  <header class="topbar">
+    <div>
+      <h1 id="top-title">Beranda</h1>
+      <p id="top-sub"></p>
+    </div>
+    <button class="icon-btn" id="btn-refresh" aria-label="Muat ulang data">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 4v5h-5"/></svg>
+    </button>
+  </header>
+
+  <main>
+    <section class="view" id="view-beranda"></section>
+    <section class="view" id="view-riwayat" hidden>
+      <div class="search">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="h-q" type="search" placeholder="Cari catatan, kategori, rekening" aria-label="Cari transaksi">
+      </div>
+      <div class="chips scroll" id="h-jenis">
+        <button class="chip on" data-v="semua">Semua</button>
+        <button class="chip" data-v="pengeluaran">Pengeluaran</button>
+        <button class="chip" data-v="pemasukan">Pemasukan</button>
+      </div>
+      <div class="filters">
+        <label>Kategori<select id="h-kat"></select></label>
+        <label>Dari<input type="date" id="h-from"></label>
+        <label>Sampai<input type="date" id="h-to"></label>
+      </div>
+      <div id="h-info" class="h-info"></div>
+      <div id="h-list"></div>
+    </section>
+    <section class="view" id="view-grafik" hidden></section>
+    <section class="view" id="view-akun" hidden></section>
+  </main>
+
+  <nav class="bottomnav" aria-label="Navigasi utama">
+    <button class="nav on" data-view="beranda">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/></svg>
+      <span>Beranda</span>
+    </button>
+    <button class="nav" data-view="riwayat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg>
+      <span>Riwayat</span>
+    </button>
+    <button class="fab" id="fab" aria-label="Tambah transaksi">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <button class="nav" data-view="grafik">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>
+      <span>Grafik</span>
+    </button>
+    <button class="nav" data-view="akun">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.8 1.2V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.8-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.2-2.8H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.2-2.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 2.8-1.2V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.8 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0 1.2 2.8h.1a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.4 1.1Z"/></svg>
+      <span>Pengaturan</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ============ LEMBAR BAWAH: FORM TRANSAKSI ============ -->
+<div class="backdrop" id="backdrop"></div>
+
+<section class="sheet" id="sheet-form" role="dialog" aria-modal="true" aria-labelledby="form-title">
+  <div class="sheet-head">
+    <h2 id="form-title">Tambah transaksi</h2>
+    <button class="icon-btn" data-close aria-label="Tutup">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+  <form id="form" novalidate>
+    <div class="seg" id="f-jenis">
+      <button type="button" data-jenis="pengeluaran" class="on">Pengeluaran</button>
+      <button type="button" data-jenis="pemasukan">Pemasukan</button>
+    </div>
+
+    <label class="amount" for="f-nominal">
+      <span>Rp</span>
+      <input id="f-nominal" type="text" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="Nominal">
+    </label>
+    <p class="field-err" id="e-nominal" hidden>Isi nominal lebih dari 0.</p>
+
+    <div class="field">
+      <div class="field-label">Kategori</div>
+      <div id="f-kat" class="kat-grid"></div>
+      <p class="field-err" id="e-kat" hidden>Pilih kategori dulu.</p>
+    </div>
+    <div class="field" id="w-sub" hidden>
+      <div class="field-label">Subkategori</div>
+      <div id="f-sub" class="chips"></div>
+    </div>
+    <div class="field">
+      <div class="field-label" id="l-rek">Rekening</div>
+      <div id="f-rek" class="chips"></div>
+    </div>
+    <div class="field">
+      <div class="field-label">Tanggal</div>
+      <div class="date-row">
+        <button type="button" class="chip" data-tgl="0">Hari ini</button>
+        <button type="button" class="chip" data-tgl="-1">Kemarin</button>
+        <input type="date" id="f-tgl" aria-label="Tanggal">
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label" for="f-detail">Catatan (opsional)</label>
+      <input id="f-detail" type="text" maxlength="300" autocomplete="off" placeholder="Contoh: makan siang di kantor">
+    </div>
+    <div class="sheet-foot">
+      <button class="btn-primary" id="f-simpan" type="submit">Simpan</button>
+    </div>
+  </form>
+</section>
+
+<!-- ============ LEMBAR BAWAH: DETAIL TRANSAKSI ============ -->
+<section class="sheet" id="sheet-detail" role="dialog" aria-modal="true" aria-label="Detail transaksi">
+  <div class="sheet-head">
+    <h2>Detail transaksi</h2>
+    <button class="icon-btn" data-close aria-label="Tutup">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+  <div id="detail-body"></div>
+  <div class="sheet-foot two">
+    <button class="btn-ghost danger" id="d-hapus" type="button">Hapus</button>
+    <button class="btn-primary" id="d-edit" type="button">Edit</button>
+  </div>
+</section>
+
+<!-- ============ KONFIRMASI ============ -->
+<div class="dialog" id="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-title" hidden>
+  <div class="dialog-card">
+    <h2 id="dlg-title"></h2>
+    <p id="dlg-text"></p>
+    <div class="dialog-actions">
+      <button class="btn-ghost" id="dlg-no" type="button">Batal</button>
+      <button class="btn-danger" id="dlg-yes" type="button">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="chart.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
